@@ -110,7 +110,7 @@ new Vue({
         return item ? item.name : '';
       },
       submitForm() {
-        if (this.form.umur < 25) {
+        if (this.form.umur <= 25) {
           alert('Umur harus lebih dari atau sama dengan 25 tahun.');
           return;
         }
