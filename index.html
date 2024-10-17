@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bansos Form</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="app">
+    <div class="container">
+      <h1>Form Penerima Bantuan Sosial</h1>
+      <!-- Progress Bar -->
+      <div class="progress-bar">
+        <div class="progress" :style="{ width: progress + '%' }"></div>
+      </div>
+      
+      <!-- Form Card -->
+      <div class="card">
+        <form @submit.prevent="submitForm">
+          <!-- Nama -->
+          <div class="form-group">
+            <label for="nama">Nama</label>
+            <input type="text" id="nama" v-model="form.nama" required @input="updateProgress">
+          </div>
+          
+          <!-- NIK -->
+          <div class="form-group">
+            <label for="nik">NIK</label>
+            <input type="number" id="nik" v-model="form.nik" required @input="updateProgress">
+          </div>
+
+          <!-- Nomor Kartu Keluarga -->
+          <div class="form-group">
+            <label for="noKK">Nomor Kartu Keluarga</label>
+            <input type="number" id="noKK" v-model="form.noKK" required @input="updateProgress">
+          </div>
+
+          <!-- Foto KTP -->
+          <div class="form-group">
+            <label for="fotoKTP">Foto KTP</label>
+            <input type="file" id="fotoKTP" @change="handleFileUpload('fotoKTP', $event)" accept=".jpg,.jpeg,.png,.bmp" required @input="updateProgress">
+          </div>
+
+          <!-- Foto Kartu Keluarga -->
+          <div class="form-group">
+            <label for="fotoKK">Foto Kartu Keluarga</label>
+            <input type="file" id="fotoKK" @change="handleFileUpload('fotoKK', $event)" accept=".jpg,.jpeg,.png,.bmp" required @input="updateProgress">
+          </div>
+
+          <!-- Umur -->
+          <div class="form-group">
+            <label for="umur">Umur</label>
+            <input type="number" id="umur" v-model="form.umur" min="25" required @input="updateProgress">
+          </div>
+
+          <!-- Jenis Kelamin -->
+          <div class="form-group">
+            <label for="jenisKelamin">Jenis Kelamin</label>
+            <select id="jenisKelamin" v-model="form.jenisKelamin" required @change="updateProgress">
+              <option value="">Pilih Jenis Kelamin</option>
+              <option value="Laki-laki">Laki-laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+
+          <!-- Provinsi -->
+          <div class="form-group">
+            <label for="provinsi">Provinsi</label>
+            <select id="provinsi" v-model="form.provinsi" @change="fetchKabupaten" required @change="updateProgress">
+              <option value="">Pilih Provinsi</option>
+              <option v-for="prov in provinsiList" :value="prov.id">{{ prov.name }}</option>
+            </select>
+          </div>
+
+          <!-- Kab/Kota -->
+          <div class="form-group">
+            <label for="kabupaten">Kabupaten/Kota</label>
+            <select id="kabupaten" v-model="form.kabupaten" @change="fetchKecamatan" required @change="updateProgress">
+              <option value="">Pilih Kabupaten/Kota</option>
+              <option v-for="kab in kabupatenList" :value="kab.id">{{ kab.name }}</option>
+            </select>
+          </div>
+
+          <!-- Kecamatan -->
+          <div class="form-group">
+            <label for="kecamatan">Kecamatan</label>
+            <select id="kecamatan" v-model="form.kecamatan" @change="fetchKelurahan" required @change="updateProgress">
+              <option value="">Pilih Kecamatan</option>
+              <option v-for="kec in kecamatanList" :value="kec.id">{{ kec.name }}</option>
+            </select>
+          </div>
+
+          <!-- Kelurahan/Desa -->
+          <div class="form-group">
+            <label for="kelurahan">Kelurahan/Desa</label>
+            <select id="kelurahan" v-model="form.kelurahan" required @change="updateProgress">
+              <option value="">Pilih Kelurahan/Desa</option>
+              <option v-for="kel in kelurahanList" :value="kel.id">{{ kel.name }}</option>
+            </select>
+          </div>
+
+          <!-- Alamat -->
+          <div class="form-group">
+            <label for="alamat">Alamat</label>
+            <input type="text" id="alamat" v-model="form.alamat" maxlength="255" required @input="updateProgress">
+          </div>
+
+          <!-- RT -->
+          <div class="form-group">
+            <label for="rt">RT</label>
+            <input type="text" id="rt" v-model="form.rt" required @input="updateProgress">
+          </div>
+
+          <!-- RW -->
+          <div class="form-group">
+            <label for="rw">RW</label>
+            <input type="text" id="rw" v-model="form.rw" required @input="updateProgress">
+          </div>
+
+          <!-- Penghasilan sebelum pandemi -->
+          <div class="form-group">
+            <label for="penghasilanSebelum">Penghasilan Sebelum Pandemi</label>
+            <input type="number" id="penghasilanSebelum" v-model="form.penghasilanSebelum" required @input="updateProgress">
+          </div>
+
+          <!-- Penghasilan setelah pandemi -->
+          <div class="form-group">
+            <label for="penghasilanSesudah">Penghasilan Setelah Pandemi</label>
+            <input type="number" id="penghasilanSesudah" v-model="form.penghasilanSesudah" required @input="updateProgress">
+          </div>
+
+          <!-- Alasan membutuhkan bantuan -->
+          <div class="form-group">
+            <label for="alasan">Alasan Membutuhkan Bantuan</label>
+            <select id="alasan" v-model="form.alasan" required @change="updateProgress">
+              <option value="">Pilih Alasan</option>
+              <option value="Kehilangan pekerjaan">Kehilangan pekerjaan</option>
+              <option value="Kepala keluarga">Kepala keluarga</option>
+              <option value="Tergolong fakir/miskin">Tergolong fakir/miskin</option>
+              <option value="Lainnya">Lainnya</option>
+            </select>
+            <div v-if="form.alasan === 'Lainnya'">
+              <input type="text" v-model="form.alasanLainnya" placeholder="Sebutkan alasan lain" @input="updateProgress">
+            </div>
+          </div>
+
+          <!-- Checkbox Confirmation -->
+          <div class="form-group">
+            <input type="checkbox" id="confirm" v-model="form.confirm" required @change="updateProgress">
+            <label for="confirm" class="checkbox-label">
+                Saya menyatakan bahwa data yang diisikan adalah benar dan siap mempertanggungjawabkan apabila ditemukan ketidaksesuaian dalam data tersebut.            </label>
+          </div>
+
+          <!-- Submit Button -->
+          <button type="submit" :disabled="isSubmitting || progress < 100">{{ isSubmitting ? 'Mengirim...' : 'Submit' }}</button>
+        </form>
+      </div>
+
+      <!-- Preview Data -->
+      <div v-if="showPreview" class="preview">
+        <h2>Preview Data</h2>
+        <table>
+          <tr><th>Nama</th><td>{{ form.nama }}</td></tr>
+          <tr><th>NIK</th><td>{{ form.nik }}</td></tr>
+          <tr><th>Nomor Kartu Keluarga</th><td>{{ form.noKK }}</td></tr>
+          <tr><th>Umur</th><td>{{ form.umur }}</td></tr>
+          <tr><th>Jenis Kelamin</th><td>{{ form.jenisKelamin }}</td></tr>
+          <tr><th>Provinsi</th><td>{{ getNameById(provinsiList, form.provinsi) }}</td></tr>
+          <tr><th>Kabupaten/Kota</th><td>{{ getNameById(kabupatenList, form.kabupaten) }}</td></tr>
+          <tr><th>Kecamatan</th><td>{{ getNameById(kecamatanList, form.kecamatan) }}</td></tr>
+          <tr><th>Kelurahan/Desa</th><td>{{ getNameById(kelurahanList, form.kelurahan) }}</td></tr>
+          <tr><th>Alamat</th><td>{{ form.alamat }}</td></tr>
+          <tr><th>RT</th><td>{{ form.rt }}</td></tr>
+          <tr><th>RW</th><td>{{ form.rw }}</td></tr>
+          <tr><th>Penghasilan Sebelum Pandemi</th><td>{{ form.penghasilanSebelum }}</td></tr>
+          <tr><th>Penghasilan Setelah Pandemi</th><td>{{ form.penghasilanSesudah }}</td></tr>
+          <tr><th>Alasan Membutuhkan Bantuan</th><td>{{ form.alasan === 'Lainnya' ? form.alasanLainnya : form.alasan }}</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
